@@ -12,7 +12,7 @@ class LavaLurker: SKSpriteNode {
     let moveSpeed: Double
     
     init(x: Double, y: Double) {
-        self.moveSpeed = Double.random(in: 100...150)
+        self.moveSpeed = Double.random(in: 50...100)
         super.init(texture: SKTexture(imageNamed: "lavalurker"), color: .clear, size: CGSize(width: 40, height: 30))
         self.position = CGPoint(x: x, y: y)
         
