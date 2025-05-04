@@ -14,6 +14,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private var nest: Nest = Nest()
     private var numberOfBaubites: Int = 100
     private var touchLocations: [CGPoint] = []
+    let healthBar = SKSpriteNode(color: .green, size: CGSize(width: 200, height: 20))
     
     override func didMove(to view: SKView) {
         self.scaleMode = .aspectFit
@@ -34,6 +35,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             baubites.append(Baubite())
             addChild(baubites[i])
         }
+        
+        // nest healthbar
+        let healthBarBackground = SKSpriteNode(color: .gray, size: CGSize(width: 210, height: 25))
+        healthBarBackground.position = CGPoint(x: 0, y: 200)
+        healthBarBackground.zPosition = 5
+        let damageBackground = SKSpriteNode(color: .red, size: CGSize(width: 200, height: 20))
+        damageBackground.position = CGPoint(x: 0, y: 200)
+        damageBackground.zPosition = 6
+        healthBar.anchorPoint = CGPoint(x: 0, y: 0.5)
+        healthBar.position = CGPoint(x: -100, y: 200)
+        healthBar.zPosition = 7
+        addChild(healthBarBackground)
+        addChild(damageBackground)
+        addChild(healthBar)
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -101,9 +116,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func collisionBetween(creature: SKNode, object: SKNode?) {
         if creature.name == "lavalurker" {
             if object?.name == "nest" {
+                if let particles = SKEmitterNode(fileNamed: "LavaLurkerParticle") {
+                    particles.position = nest.position
+                    particles.zPosition = 4
+                    addChild(particles)
+                }
                 nest.health -= 100
+                healthBar.size.width = CGFloat(nest.health / 5)
                 print(nest.health)
             } else if object?.name == "baubite" {
+                if let particles = SKEmitterNode(fileNamed: "BaubiteParticle") {
+                    particles.position = creature.position
+                    particles.zPosition = 4
+                    addChild(particles)
+                }
                 creature.removeFromParent()
                 print("rip")
             }
