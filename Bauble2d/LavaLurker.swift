@@ -1,27 +1,28 @@
 //
-//  Baubite.swift
+//  LavaLurker.swift
 //  Bauble2d
 //
-//  Created by Nick on 5/2/25.
+//  Created by Nick on 5/3/25.
 //
 
 import SpriteKit
 
-class Baubite: SKSpriteNode {
+class LavaLurker: SKSpriteNode {
     
     let moveSpeed: Double
     
-    init() {
-        self.moveSpeed = Double.random(in: 150...250)
-        super.init(texture: SKTexture(imageNamed: "baubite"), color: .clear, size: CGSize(width: 20, height: 20))
-        self.position = CGPoint(x: Int.random(in: -100...100), y: Int.random(in: 100...200))
+    init(x: Double, y: Double) {
+        self.moveSpeed = Double.random(in: 100...150)
+        super.init(texture: SKTexture(imageNamed: "lavalurker"), color: .clear, size: CGSize(width: 40, height: 30))
+        self.position = CGPoint(x: x, y: y)
         
-        self.physicsBody = SKPhysicsBody(circleOfRadius: self.size.width / 2)
+        self.physicsBody = SKPhysicsBody(rectangleOf: self.size)
         self.physicsBody!.restitution = 1
         self.physicsBody?.allowsRotation = false
+        self.physicsBody!.contactTestBitMask = self.physicsBody!.collisionBitMask
         self.physicsBody!.affectedByGravity = false
         self.zPosition = 1
-        self.name = "baubite"
+        self.name = "lavalurker"
     }
     
     func move(towards newLocation: CGPoint) {
