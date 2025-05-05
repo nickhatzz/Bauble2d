@@ -10,11 +10,18 @@ import GameplayKit
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
+    // gameplay vars
     private var baubites: [Baubite] = []
+    private var lavaLurkers: [LavaLurker] = []
     private var nest: Nest = Nest()
     private var numberOfBaubites: Int = 100
     private var touchLocations: [CGPoint] = []
-    let healthBar = SKSpriteNode(color: .green, size: CGSize(width: 200, height: 20))
+    
+    // ui vars
+    private let healthBar = SKSpriteNode(color: .green, size: CGSize(width: 200, height: 20))
+    let healthBarBackground = SKSpriteNode(color: .gray, size: CGSize(width: 210, height: 25))
+    let damageBackground = SKSpriteNode(color: .red, size: CGSize(width: 200, height: 20))
+    let gameOverLabel = SKSpriteNode(texture: SKTexture(imageNamed: "logo"), size: CGSize(width: 683 / 2, height: 384 / 2))
     
     override func didMove(to view: SKView) {
         self.scaleMode = .aspectFit
@@ -37,10 +44,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         // nest healthbar
-        let healthBarBackground = SKSpriteNode(color: .gray, size: CGSize(width: 210, height: 25))
         healthBarBackground.position = CGPoint(x: 0, y: 200)
         healthBarBackground.zPosition = 5
-        let damageBackground = SKSpriteNode(color: .red, size: CGSize(width: 200, height: 20))
         damageBackground.position = CGPoint(x: 0, y: 200)
         damageBackground.zPosition = 6
         healthBar.anchorPoint = CGPoint(x: 0, y: 0.5)
@@ -76,6 +81,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     override func update(_ currentTime: TimeInterval) {
+        guard nest.health > 0 else { return }
+        
         // baubite movement
         if !touchLocations.isEmpty {
             let baubitesPerGroup = numberOfBaubites / touchLocations.count
@@ -91,17 +98,34 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
         
-        // check nest health
-        if nest.health <= 0 {
-            gameOver()
-        }
-        
         // spawning lavalurkers
         if Int.random(in: 0..<60) == 0 {
             let lavaLurker = LavaLurker(x: Double.random(in: 0-self.frame.width...self.frame.width), y: Double.random(in: 0-self.frame.height...self.frame.height))
-            let action = SKAction.move(to: CGPoint(x: 0, y: 0), duration: 5)
-            lavaLurker.run(action)
-            addChild(lavaLurker)
+            lavaLurkers.append(lavaLurker)
+            addChild(lavaLurkers.last!)
+            lavaLurkers.last!.move(towards: nest.position)
+        }
+        
+        // lavalurker attacks
+        if Int(currentTime) % 3 == 0 {
+            for lavaLurker in lavaLurkers {
+                print(hypotf(Float(lavaLurker.position.x - nest.position.x), Float(lavaLurker.position.y - nest.position.y)))
+                if hypotf(Float(lavaLurker.position.x - nest.position.x), Float(lavaLurker.position.y - nest.position.y)) < 80 {
+                    if let particles = SKEmitterNode(fileNamed: "LavaLurkerParticle") {
+                        particles.position = nest.position
+                        particles.zPosition = 4
+                        addChild(particles)
+                    }
+                    nest.health -= 10
+                    if nest.health <= 0 {
+                        // game over
+                        gameOver()
+                    } else {
+                        healthBar.size.width = CGFloat(nest.health / 5)
+                    }
+                    print(nest.health)
+                }
+            }
         }
     }
     
@@ -116,20 +140,26 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func collisionBetween(creature: SKNode, object: SKNode?) {
         if creature.name == "lavalurker" {
             if object?.name == "nest" {
-                if let particles = SKEmitterNode(fileNamed: "LavaLurkerParticle") {
-                    particles.position = nest.position
-                    particles.zPosition = 4
-                    addChild(particles)
-                }
-                nest.health -= 100
-                healthBar.size.width = CGFloat(nest.health / 5)
-                print(nest.health)
+//                if let particles = SKEmitterNode(fileNamed: "LavaLurkerParticle") {
+//                    particles.position = nest.position
+//                    particles.zPosition = 4
+//                    addChild(particles)
+//                }
+//                nest.health -= 100
+//                if nest.health <= 0 {
+//                    // game over
+//                    gameOver()
+//                } else {
+//                    healthBar.size.width = CGFloat(nest.health / 5)
+//                }
+//                print(nest.health)
             } else if object?.name == "baubite" {
                 if let particles = SKEmitterNode(fileNamed: "BaubiteParticle") {
                     particles.position = creature.position
                     particles.zPosition = 4
                     addChild(particles)
                 }
+                lavaLurkers.remove(at: lavaLurkers.firstIndex(of: creature as! LavaLurker)!)
                 creature.removeFromParent()
                 print("rip")
             }
@@ -142,6 +172,30 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func gameOver() {
+        // remove healthbar
+        healthBar.removeFromParent()
+        healthBarBackground.removeFromParent()
+        damageBackground.removeFromParent()
+        
+        // remove baubites
+        for baubite in baubites {
+            baubite.removeFromParent()
+        }
+        baubites = []
+        
+        // destroy nest
+        if let particles = SKEmitterNode(fileNamed: "NestParticle") {
+            particles.position = nest.position
+            particles.zPosition = 4
+            addChild(particles)
+        }
+        nest.removeFromParent()
+        
+        // game over ui
+        gameOverLabel.position = CGPoint(x: 0, y: 180)
+        gameOverLabel.zPosition = 3
+        addChild(gameOverLabel)
+        
         print("game over")
     }
 }
