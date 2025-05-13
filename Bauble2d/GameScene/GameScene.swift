@@ -18,10 +18,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private var touchLocations: [CGPoint] = []
     
     // ui vars
+    // health bar
     private let healthBar = SKSpriteNode(color: .green, size: CGSize(width: 200, height: 20))
     let healthBarBackground = SKSpriteNode(color: .gray, size: CGSize(width: 210, height: 25))
     let damageBackground = SKSpriteNode(color: .red, size: CGSize(width: 200, height: 20))
-    let gameOverLabel = SKSpriteNode(texture: SKTexture(imageNamed: "logo"), size: CGSize(width: 683 / 2, height: 384 / 2))
+    // timer
+    private let timeLabel = SKLabelNode(text: "Time: 00:00")
+    var time = 0
+    // score
+    private let scoreLabel = SKLabelNode(text: "Score: 0")
     
     override func didMove(to view: SKView) {
         self.scaleMode = .aspectFit
@@ -54,6 +59,32 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(healthBarBackground)
         addChild(damageBackground)
         addChild(healthBar)
+        
+        // final score label
+        scoreLabel.position = CGPoint(x: 0, y: 100)
+        scoreLabel.fontSize = 60
+        scoreLabel.fontName = "KiwiSoda"
+        scoreLabel.zPosition = 10
+        
+        // timer label
+        timeLabel.position = CGPoint(x: -350, y: 190)
+        timeLabel.fontSize = 45
+        timeLabel.horizontalAlignmentMode = .left
+        timeLabel.fontName = "KiwiSoda"
+        timeLabel.zPosition = 10
+        addChild(timeLabel)
+        
+        // timer timer
+        let oneSecondTimer = SKAction.wait(forDuration: 1)
+        let timerAction = SKAction.run(updateTime)
+        let timerSequence = SKAction.sequence([oneSecondTimer, timerAction])
+        self.run(SKAction.repeatForever(timerSequence))
+        
+        // lavalurker attack timer
+        let halfSecondTimer = SKAction.wait(forDuration: 0.5)
+        let attackTimerAction = SKAction.run(lavaLurkerAttack)
+        let attackTimerSequence = SKAction.sequence([halfSecondTimer, attackTimerAction])
+        self.run(SKAction.repeatForever(attackTimerSequence))
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -105,28 +136,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             addChild(lavaLurkers.last!)
             lavaLurkers.last!.move(towards: nest.position)
         }
-        
-        // lavalurker attacks
-        if Int(currentTime) % 3 == 0 {
-            for lavaLurker in lavaLurkers {
-                print(hypotf(Float(lavaLurker.position.x - nest.position.x), Float(lavaLurker.position.y - nest.position.y)))
-                if hypotf(Float(lavaLurker.position.x - nest.position.x), Float(lavaLurker.position.y - nest.position.y)) < 80 {
-                    if let particles = SKEmitterNode(fileNamed: "LavaLurkerParticle") {
-                        particles.position = nest.position
-                        particles.zPosition = 4
-                        addChild(particles)
-                    }
-                    nest.health -= 10
-                    if nest.health <= 0 {
-                        // game over
-                        gameOver()
-                    } else {
-                        healthBar.size.width = CGFloat(nest.health / 5)
-                    }
-                    print(nest.health)
-                }
-            }
-        }
     }
     
     func didBegin(_ contact: SKPhysicsContact) {
@@ -139,21 +148,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func collisionBetween(creature: SKNode, object: SKNode?) {
         if creature.name == "lavalurker" {
-            if object?.name == "nest" {
-//                if let particles = SKEmitterNode(fileNamed: "LavaLurkerParticle") {
-//                    particles.position = nest.position
-//                    particles.zPosition = 4
-//                    addChild(particles)
-//                }
-//                nest.health -= 100
-//                if nest.health <= 0 {
-//                    // game over
-//                    gameOver()
-//                } else {
-//                    healthBar.size.width = CGFloat(nest.health / 5)
-//                }
-//                print(nest.health)
-            } else if object?.name == "baubite" {
+            if object?.name == "baubite" {
                 if let particles = SKEmitterNode(fileNamed: "BaubiteParticle") {
                     particles.position = creature.position
                     particles.zPosition = 4
@@ -172,6 +167,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func gameOver() {
+        // stop timers
+        removeAllActions()
+        
         // remove healthbar
         healthBar.removeFromParent()
         healthBarBackground.removeFromParent()
@@ -191,11 +189,42 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         nest.removeFromParent()
         
-        // game over ui
-        gameOverLabel.position = CGPoint(x: 0, y: 180)
-        gameOverLabel.zPosition = 3
-        addChild(gameOverLabel)
+        // show final score
+        scoreLabel.text = "Score: \(time * 17)"
+        addChild(scoreLabel)
+        
+        // add play again button
+        // add return to menu button
         
         print("game over")
+    }
+    
+    func updateTime() {
+        time += 1
+        let minutes: Int = time / 60
+        let seconds: Int = time - (minutes * 60)
+        timeLabel.text = "Time: \(String(format: "%2.2d", minutes)):\(String(format: "%2.2d", seconds))"
+    }
+    
+    func lavaLurkerAttack() {
+        guard nest.health > 0 else { return }
+        
+        for lavaLurker in lavaLurkers {
+            if hypotf(Float(lavaLurker.position.x - nest.position.x), Float(lavaLurker.position.y - nest.position.y)) < 100 {
+                if let particles = SKEmitterNode(fileNamed: "LavaLurkerParticle") {
+                    particles.position = nest.position
+                    particles.zPosition = 4
+                    addChild(particles)
+                }
+                nest.health -= 10
+                if nest.health <= 0 {
+                    // game over
+                    gameOver()
+                } else {
+                    healthBar.size.width = CGFloat(nest.health / 5)
+                }
+                print(nest.health)
+            }
+        }
     }
 }
