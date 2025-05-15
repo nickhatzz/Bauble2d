@@ -14,7 +14,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private var baubites: [Baubite] = []
     private var lavaLurkers: [LavaLurker] = []
     private var nest: Nest = Nest()
-    private var numberOfBaubites: Int = 100
+    private var numberOfBaubites: Int = 5
     private var touchLocations: [CGPoint] = []
     
     // ui vars
@@ -130,11 +130,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         // spawning lavalurkers
-        if Int.random(in: 0..<60) == 0 {
+        if Int.random(in: 0..<30/((time/30)+1)) == 0 {
             let lavaLurker = LavaLurker(x: Double.random(in: 0-self.frame.width...self.frame.width), y: Double.random(in: 0-self.frame.height...self.frame.height))
             lavaLurkers.append(lavaLurker)
             addChild(lavaLurkers.last!)
             lavaLurkers.last!.move(towards: nest.position)
+            if lavaLurker.position.x < 0 {
+                lavaLurker.xScale = -1
+            }
+        }
+        
+        // spawning baubites
+        if Int.random(in: 0..<120) == 0 && baubites.count < 100 {
+            baubites.append(Baubite())
+            addChild(baubites.last!)
+            numberOfBaubites += 1
         }
     }
     
@@ -149,19 +159,41 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func collisionBetween(creature: SKNode, object: SKNode?) {
         if creature.name == "lavalurker" {
             if object?.name == "baubite" {
-                if let particles = SKEmitterNode(fileNamed: "BaubiteParticle") {
-                    particles.position = creature.position
-                    particles.zPosition = 4
-                    addChild(particles)
+                let baubite = object as! Baubite
+                baubite.health -= 10
+                if baubite.health <= 0 {
+                    baubite.removeFromParent()
+                    numberOfBaubites -= 1
+                    baubites.remove(at: baubites.firstIndex(of: baubite)!)
+                    (creature as! LavaLurker).move(towards: CGPoint(x: 0, y: 0))
+                } else {
+                    if let particles = SKEmitterNode(fileNamed: "BaubiteParticle") {
+                        particles.position = creature.position
+                        particles.zPosition = 4
+                        addChild(particles)
+                    }
+                    lavaLurkers.remove(at: lavaLurkers.firstIndex(of: creature as! LavaLurker)!)
+                    creature.removeFromParent()
                 }
-                lavaLurkers.remove(at: lavaLurkers.firstIndex(of: creature as! LavaLurker)!)
-                creature.removeFromParent()
-                print("rip")
             }
         } else if creature.name == "baubite" {
             if object?.name == "lavalurker" {
-                object?.removeFromParent()
-                print("rip")
+                let baubite = creature as! Baubite
+                baubite.health -= 10
+                if baubite.health <= 0 {
+                    baubite.removeFromParent()
+                    numberOfBaubites -= 1
+                    baubites.remove(at: baubites.firstIndex(of: baubite)!)
+                    (object as! LavaLurker).move(towards: CGPoint(x: 0, y: 0))
+                } else {
+                    if let particles = SKEmitterNode(fileNamed: "BaubiteParticle") {
+                        particles.position = object!.position
+                        particles.zPosition = 4
+                        addChild(particles)
+                    }
+                    lavaLurkers.remove(at: lavaLurkers.firstIndex(of: object as! LavaLurker)!)
+                    creature.removeFromParent()
+                }
             }
         }
     }
@@ -191,6 +223,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // show final score
         scoreLabel.text = "Score: \(time * 17)"
+        scoreLabel.removeFromParent()
         addChild(scoreLabel)
         
         // add play again button
@@ -204,6 +237,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let minutes: Int = time / 60
         let seconds: Int = time - (minutes * 60)
         timeLabel.text = "Time: \(String(format: "%2.2d", minutes)):\(String(format: "%2.2d", seconds))"
+        for baubite in baubites {
+            baubite.heal()
+        }
     }
     
     func lavaLurkerAttack() {
