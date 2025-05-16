@@ -10,12 +10,27 @@ import GameplayKit
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
+    /*
+     TO-DO:
+     -more powerups (clear enemies, heal nest, etc)
+     -play again button
+     -improve nest healthbar
+     -make enemies spawn only on outter edges
+     -prevent last baubite from dying
+     -second enemy type
+     -make powerups spawn on a timer, add timer to ui
+     -return to menu button
+     -save top scores to menu
+     -improve the way that more enemies spawn when the time is greater
+     */
+    
     // gameplay vars
     private var baubites: [Baubite] = []
     private var lavaLurkers: [LavaLurker] = []
     private var nest: Nest = Nest()
     private var numberOfBaubites: Int = 5
     private var touchLocations: [CGPoint] = []
+    private var score = 0
     
     // ui vars
     // health bar
@@ -76,15 +91,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // timer timer
         let oneSecondTimer = SKAction.wait(forDuration: 1)
-        let timerAction = SKAction.run(updateTime)
-        let timerSequence = SKAction.sequence([oneSecondTimer, timerAction])
-        self.run(SKAction.repeatForever(timerSequence))
+        let secondTimerAction = SKAction.run(secondFunction)
+        let secondTimerSequence = SKAction.sequence([oneSecondTimer, secondTimerAction])
+        self.run(SKAction.repeatForever(secondTimerSequence))
         
         // lavalurker attack timer
         let halfSecondTimer = SKAction.wait(forDuration: 0.5)
-        let attackTimerAction = SKAction.run(lavaLurkerAttack)
-        let attackTimerSequence = SKAction.sequence([halfSecondTimer, attackTimerAction])
-        self.run(SKAction.repeatForever(attackTimerSequence))
+        let halfSecondTimerAction = SKAction.run(halfSecondFunction)
+        let halfSecondTimerSequence = SKAction.sequence([halfSecondTimer, halfSecondTimerAction])
+        self.run(SKAction.repeatForever(halfSecondTimerSequence))
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -130,7 +145,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         // spawning lavalurkers
-        if Int.random(in: 0..<30/((time/30)+1)) == 0 {
+        if Int.random(in: 0..<30/((time/15)+1)) == 0 {
             let lavaLurker = LavaLurker(x: Double.random(in: 0-self.frame.width...self.frame.width), y: Double.random(in: 0-self.frame.height...self.frame.height))
             lavaLurkers.append(lavaLurker)
             addChild(lavaLurkers.last!)
@@ -140,51 +155,31 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
         
-        // spawning baubites
-        if Int.random(in: 0..<120) == 0 && baubites.count < 100 {
-            baubites.append(Baubite())
-            addChild(baubites.last!)
-            numberOfBaubites += 1
+        // spawning powerups
+        if Int.random(in: 0..<200) == 0 {
+            spawnPowerUp()
         }
     }
     
     func didBegin(_ contact: SKPhysicsContact) {
-        if contact.bodyA.node?.name == "lavalurker" {
+        if contact.bodyA.node?.name == "baubite" {
             collisionBetween(creature: contact.bodyA.node!, object: contact.bodyB.node)
-        } else if contact.bodyB.node?.name == "lavalurker" {
+        } else if contact.bodyB.node?.name == "baubite" {
             collisionBetween(creature: contact.bodyB.node!, object: contact.bodyA.node)
         }
     }
     
     func collisionBetween(creature: SKNode, object: SKNode?) {
-        if creature.name == "lavalurker" {
-            if object?.name == "baubite" {
-                let baubite = object as! Baubite
-                baubite.health -= 10
-                if baubite.health <= 0 {
-                    baubite.removeFromParent()
-                    numberOfBaubites -= 1
-                    baubites.remove(at: baubites.firstIndex(of: baubite)!)
-                    (creature as! LavaLurker).move(towards: CGPoint(x: 0, y: 0))
-                } else {
-                    if let particles = SKEmitterNode(fileNamed: "BaubiteParticle") {
-                        particles.position = creature.position
-                        particles.zPosition = 4
-                        addChild(particles)
-                    }
-                    lavaLurkers.remove(at: lavaLurkers.firstIndex(of: creature as! LavaLurker)!)
-                    creature.removeFromParent()
-                }
-            }
-        } else if creature.name == "baubite" {
+        if creature.name == "baubite" {
             if object?.name == "lavalurker" {
                 let baubite = creature as! Baubite
                 baubite.health -= 10
-                if baubite.health <= 0 {
+                if baubite.health <= 0 && numberOfBaubites > 1 {
                     baubite.removeFromParent()
                     numberOfBaubites -= 1
                     baubites.remove(at: baubites.firstIndex(of: baubite)!)
                     (object as! LavaLurker).move(towards: CGPoint(x: 0, y: 0))
+                    score -= 40
                 } else {
                     if let particles = SKEmitterNode(fileNamed: "BaubiteParticle") {
                         particles.position = object!.position
@@ -192,7 +187,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                         addChild(particles)
                     }
                     lavaLurkers.remove(at: lavaLurkers.firstIndex(of: object as! LavaLurker)!)
-                    creature.removeFromParent()
+                    object!.removeFromParent()
+                    score += 20
+                }
+            } else if object?.name == "baubitespawn" {
+                score += 200
+                object!.removeFromParent()
+                print("colission")
+                for _ in 0..<10 {
+                    baubites.append(Baubite())
+                    if let particles = SKEmitterNode(fileNamed: "BaubiteParticle") {
+                        particles.position = baubites.last!.position
+                        particles.zPosition = 4
+                        addChild(particles)
+                    }
+                    addChild(baubites.last!)
+                    numberOfBaubites += 1
                 }
             }
         }
@@ -222,7 +232,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         nest.removeFromParent()
         
         // show final score
-        scoreLabel.text = "Score: \(time * 17)"
+        score += time * 17
+        scoreLabel.text = "Score: \(score)"
         scoreLabel.removeFromParent()
         addChild(scoreLabel)
         
@@ -232,19 +243,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         print("game over")
     }
     
-    func updateTime() {
+    func secondFunction() {
+        // update time
         time += 1
         let minutes: Int = time / 60
         let seconds: Int = time - (minutes * 60)
         timeLabel.text = "Time: \(String(format: "%2.2d", minutes)):\(String(format: "%2.2d", seconds))"
+        
+        // heal baubites
         for baubite in baubites {
             baubite.heal()
         }
     }
     
-    func lavaLurkerAttack() {
+    func halfSecondFunction() {
         guard nest.health > 0 else { return }
         
+        // lavalurker attacks
         for lavaLurker in lavaLurkers {
             if hypotf(Float(lavaLurker.position.x - nest.position.x), Float(lavaLurker.position.y - nest.position.y)) < 100 {
                 if let particles = SKEmitterNode(fileNamed: "LavaLurkerParticle") {
@@ -261,6 +276,29 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 }
                 print(nest.health)
             }
+        }
+        
+        // heal nest
+        if nest.health < 1000 {
+            nest.health += 1
+            healthBar.size.width = CGFloat(nest.health / 5)
+        }
+    }
+    
+    func spawnPowerUp() {
+        let powerUp = Int.random(in: 0...0)
+        let x = Double.random(in: 0-self.frame.width...self.frame.width)
+        let y = Double.random(in: 0-self.frame.height...self.frame.height)
+        switch powerUp {
+        case 0:
+            if let particles = SKEmitterNode(fileNamed: "BaubiteParticle") {
+                particles.position = CGPoint(x: x, y: y)
+                particles.zPosition = 4
+                addChild(particles)
+            }
+            addChild(BaubiteSpawn(x: x, y: y))
+        default:
+            break
         }
     }
 }
