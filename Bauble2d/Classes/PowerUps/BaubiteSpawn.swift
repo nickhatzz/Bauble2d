@@ -6,17 +6,10 @@
 //
 import SpriteKit
 
-class BaubiteSpawn: SKSpriteNode {
+class BaubiteSpawn: PowerUpBase, PowerUp {
     
     init(x: Double, y: Double) {
-        super.init(texture: SKTexture(imageNamed: "nest"), color: .clear, size: CGSize(width: 25, height: 25))
-        self.position = CGPoint(x: x, y: y)
-        self.physicsBody = SKPhysicsBody(rectangleOf: self.size)
-        self.physicsBody!.affectedByGravity = false
-        self.physicsBody!.allowsRotation = false
-        self.physicsBody!.contactTestBitMask = self.physicsBody!.collisionBitMask
-        self.physicsBody!.mass = 10000000000
-        self.zPosition = 2
+        super.init(textureAtlas: SKTextureAtlas(named: "baubite-spawn"), position: CGPoint(x: x, y: y))
         self.name = "baubitespawn"
     }
     
@@ -24,4 +17,16 @@ class BaubiteSpawn: SKSpriteNode {
         fatalError("init(coder:) has not been implemented")
     }
     
+    func collected(in scene: GameScene) {
+        scene.spawnParticle(name: "BaubiteParticle", position: position)
+        scene.score += 200
+        for _ in 0..<10 {
+            if scene.baubites.count < 100 {
+                scene.spawnParticle(name: "BaubiteParticle", position: scene.baubites.last!.position)
+                scene.baubites.append(Baubite())
+                scene.addChild(scene.baubites.last!)
+            }
+        }
+        removeFromParent()
+    }
 }

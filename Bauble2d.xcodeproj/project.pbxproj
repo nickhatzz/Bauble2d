@@ -30,20 +30,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		64C36F172DD3BEFA00657C5B /* Exceptions for "Bauble2d" folder in "Bauble2dTests" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				KiwiSoda.ttf,
-			);
-			target = 0194C6162DC56C1300705492 /* Bauble2dTests */;
-		};
-		64C36F182DD3BEFA00657C5B /* Exceptions for "Bauble2d" folder in "Bauble2dUITests" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				KiwiSoda.ttf,
-			);
-			target = 0194C6202DC56C1300705492 /* Bauble2dUITests */;
-		};
 		64C36F1A2DD3BF2800657C5B /* Exceptions for "Bauble2d" folder in "Bauble2d" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -58,8 +44,6 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				64C36F1A2DD3BF2800657C5B /* Exceptions for "Bauble2d" folder in "Bauble2d" target */,
-				64C36F172DD3BEFA00657C5B /* Exceptions for "Bauble2d" folder in "Bauble2dTests" target */,
-				64C36F182DD3BEFA00657C5B /* Exceptions for "Bauble2d" folder in "Bauble2dUITests" target */,
 			);
 			path = Bauble2d;
 			sourceTree = "<group>";
