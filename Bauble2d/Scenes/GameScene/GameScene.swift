@@ -12,7 +12,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     /*
      TO-DO:
-     -add powerup timer to ui
      -add tank enemy: lots of health, have to use many baubites to tank out
      -sound effects/music
      */
@@ -32,7 +31,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private var enemySpawnTimerNode = SKNode()
     
     // ui vars
-    public let healthBar = NestHealthbar(position: CGPoint(x: 0, y: 200))
+    public let healthBar = NestHealthbar(position: CGPoint(x: -140, y: 200))
     private var time = 0 {
         didSet {
             // change enemy spawn interval
@@ -52,9 +51,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     private let scoreLabel = SKLabelNode(text: "Score: 0")
-    private var playButton = BaubleButton(position: CGPoint(x: 0, y: 0), text: "Play again?")
-    private var menuButton = BaubleButton(position: CGPoint(x: 0, y: -75), text: "Main menu")
+    private let playButton = BaubleButton(position: CGPoint(x: 0, y: 0), text: "Play again?")
+    private let menuButton = BaubleButton(position: CGPoint(x: 0, y: -75), text: "Main menu")
     private var cursors: [Cursor] = []
+    
+    enum PowerUpType {
+        case baubiteSpawner, enemyClearer, nestHealer
+    }
     
     // MARK: Start & Update Functions
     override func didMove(to view: SKView) {
@@ -83,8 +86,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             addChild(baubites[i])
         }
         
-        // nest healthbar
+        // nest healthbar & timer
         addChild(healthBar)
+        let powerUpTimer = PowerUpTimer(in: self, position: CGPoint(x: 120, y: 200))
+        powerUpTimer.name = "poweruptimer"
+        addChild(powerUpTimer)
         
         // final score label
         scoreLabel.position = CGPoint(x: 0, y: 85)
@@ -102,12 +108,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let halfSecondTimerAction = SKAction.run(halfSecondFunction)
         let halfSecondTimerSequence = SKAction.sequence([halfSecondTimer, halfSecondTimerAction])
         self.run(SKAction.repeatForever(halfSecondTimerSequence))
-        
-        // powerup timer
-        let powerUpTimer = SKAction.wait(forDuration: 5)
-        let powerUpTimerAction = SKAction.run(spawnPowerUp)
-        let powerUpTimerSequence = SKAction.sequence([powerUpTimer, powerUpTimerAction])
-        self.run(SKAction.repeatForever(powerUpTimerSequence))
         
         // baubite attack timer
         let baubiteAttackTimer = SKAction.wait(forDuration: 0.1)
@@ -296,8 +296,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         removeAllActions()
         enemySpawnTimerNode.removeAllActions()
         
-        // remove healthbar
+        // remove healthbar & power up timer
         healthBar.removeFromParent()
+        childNode(withName: "poweruptimer")?.removeFromParent()
         
         // remove baubites
         for baubite in baubites {
@@ -350,22 +351,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    func spawnPowerUp() {
-        let powerUp = Int.random(in: 0..<3)
+    func spawnPowerUp(_ type: PowerUpType) {
         let x = Double.random(in: -self.frame.width/2+30...self.frame.width/2-30)
         let y = Double.random(in: -self.frame.height/2+30...self.frame.height/2-30)
-        switch powerUp {
-        case 0:
+        switch type {
+        case .baubiteSpawner:
             spawnParticle(name: "BaubiteParticle", position: CGPoint(x: x, y: y))
             addChild(BaubiteSpawn(x: x, y: y))
-        case 1:
+        case .nestHealer:
             spawnParticle(name: "PudgyParticle", position: CGPoint(x: x, y: y))
             addChild(NestHealer(x: x, y: y))
-        case 2:
+        case .enemyClearer:
             spawnParticle(name: "LavaLurkerParticle", position: CGPoint(x: x, y: y))
             addChild(EnemyClearer(x: x, y: y))
-        default:
-            break
         }
     }
     

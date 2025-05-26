@@ -19,7 +19,7 @@ class PowerUpBase: SKSpriteNode {
     
     init(textureAtlas: SKTextureAtlas, position: CGPoint) {
         self.textureAtlas = textureAtlas
-        super.init(texture: .none, color: .white, size: CGSize(width: 48, height: 48))
+        super.init(texture: textureAtlas.textureNamed(textureAtlas.textureNames.first!), color: .white, size: CGSize(width: 48, height: 48))
         
         self.position = position
         self.physicsBody = SKPhysicsBody(rectangleOf: self.size)
