@@ -411,6 +411,7 @@
 				DEVELOPMENT_TEAM = H8FW6KD8L3;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Bauble2d/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.arcade-games";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -441,6 +442,7 @@
 				DEVELOPMENT_TEAM = H8FW6KD8L3;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Bauble2d/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.arcade-games";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;

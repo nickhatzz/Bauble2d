@@ -75,6 +75,7 @@ class Baubite: SKSpriteNode {
     
     func attack(enemy: Enemy) {
         enemy.health -= attackDamage
+        self.run(SKAction.playSoundFileNamed("attack.wav", waitForCompletion: false))
     }
     
     // animate

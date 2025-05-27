@@ -8,6 +8,7 @@
 import SpriteKit
 
 class NestHealthbar: SKNode {
+    let shrinkSpeed = 30.0
     var healthbar = SKSpriteNode(imageNamed: "nesthealthbar")
     var greenBar = SKSpriteNode(color: UIColor(.baubleGreen), size: CGSize(width: 209, height: 30))
     var redBar = SKSpriteNode(color: UIColor(.baubleRed), size: CGSize(width: 209, height: 30))
@@ -29,7 +30,12 @@ class NestHealthbar: SKNode {
     }
     
     func update(health: Int) {
-        greenBar.size.width = 209.0 * (CGFloat(health)/1000)
+        let newWidth = 209.0 * (CGFloat(health)/1000)
+        let difference = abs(greenBar.frame.width - newWidth)
+        
+        let shrinkAction = SKAction.resize(toWidth: newWidth, duration: difference / shrinkSpeed)
+        greenBar.run(shrinkAction)
+//        greenBar.size.width = 209.0 * (CGFloat(health)/1000)
     }
     
     required init?(coder aDecoder: NSCoder) {

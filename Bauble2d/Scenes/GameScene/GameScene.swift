@@ -11,11 +11,7 @@ import GameplayKit
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
     /*
-     TO-DO:
-     -add tank enemy: lots of health, have to use many baubites to tank out
-     */
-    
-    /*
+     designed for ipad mini a17pro, should work on any device
      !!! option key can be used to do multiple touches on simulator !!!
      baubite movement is a bit buggy in simulator but works perfectly on real devices
      */
