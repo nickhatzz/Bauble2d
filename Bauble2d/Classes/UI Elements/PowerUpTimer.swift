@@ -84,6 +84,9 @@ class PowerUpTimer: SKNode {
             type = .nestHealer
         }
         
-        timerBar.run(SKAction.resize(toWidth: 0, duration: 5), completion: { self.gameScene.spawnPowerUp(type) })
+        timerBar.run(SKAction.resize(toWidth: 0, duration: 5), completion: {
+            self.gameScene.spawnPowerUp(type)
+            self.run(SKAction.playSoundFileNamed("powerupspawn.wav", waitForCompletion: false))
+        })
     }
 }

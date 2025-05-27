@@ -18,6 +18,10 @@ class TitleScene: SKScene {
     
     override func didMove(to view: SKView) {
         self.scaleMode = .aspectFit
+        let musicNode = SKAudioNode(fileNamed: "Apple.mp3")
+        musicNode.autoplayLooped = true
+        musicNode.isPositional = false
+        addChild(musicNode)
         
         // add background
         let background = SKSpriteNode(imageNamed: "grass")
@@ -65,9 +69,11 @@ class TitleScene: SKScene {
             if objects.contains(playButton) {
                 let newScene = SKScene(fileNamed: "GameScene")
                 newScene!.scaleMode = .aspectFit
+                newScene?.run(SKAction.playSoundFileNamed("buttonclick.wav", waitForCompletion: false))
                 self.view!.presentScene(newScene!)
                 return
             } else if objects.contains(gitHubButton) {
+                self.run(SKAction.playSoundFileNamed("buttonclick.wav", waitForCompletion: false))
                 UIApplication.shared.open(URL(string: "https://github.com/nickhatzz/Bauble2d")!)
             }
         }

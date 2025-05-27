@@ -27,6 +27,7 @@ class BaubiteSpawn: PowerUpBase, PowerUp {
                 scene.addChild(scene.baubites.last!)
             }
         }
+        scene.run(SKAction.playSoundFileNamed("powerupcollected.wav", waitForCompletion: false))
         removeFromParent()
     }
 }

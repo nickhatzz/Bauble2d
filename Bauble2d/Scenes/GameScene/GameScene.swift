@@ -13,7 +13,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     /*
      TO-DO:
      -add tank enemy: lots of health, have to use many baubites to tank out
-     -sound effects/music
      */
     
     /*
@@ -62,6 +61,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // MARK: Start & Update Functions
     override func didMove(to view: SKView) {
         self.scaleMode = .aspectFit
+        let musicNode = SKAudioNode(fileNamed: "360.mp3")
+        musicNode.autoplayLooped = true
+        musicNode.isPositional = false
+        addChild(musicNode)
         physicsWorld.contactDelegate = self
         
         // add background
@@ -166,11 +169,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 if objects.contains(playButton) {
                     let newScene = SKScene(fileNamed: "GameScene")
                     newScene!.scaleMode = .aspectFit
+                    newScene?.run(SKAction.playSoundFileNamed("buttonclick.wav", waitForCompletion: false))
                     self.view!.presentScene(newScene!)
                     return
                 } else if objects.contains(menuButton) {
                     let newScene = SKScene(fileNamed: "TitleScene")
                     newScene!.scaleMode = .aspectFit
+                    newScene?.run(SKAction.playSoundFileNamed("buttonclick.wav", waitForCompletion: false))
                     self.view!.presentScene(newScene!)
                     return
                 }
@@ -309,6 +314,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // destroy nest
         spawnParticle(name: "NestParticle", position: nest.position)
         nest.removeFromParent()
+        self.run(SKAction.playSoundFileNamed("nestdeath.wav", waitForCompletion: false))
         
         // show final score
         let title = SKSpriteNode(texture: SKTexture(imageNamed: "logo"))

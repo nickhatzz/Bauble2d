@@ -21,6 +21,7 @@ class EnemyClearer: PowerUpBase, PowerUp {
         scene.spawnParticle(name: "LavaLurkerParticle", position: position)
         scene.score += 200
         scene.removeAllEnemies()
+        scene.run(SKAction.playSoundFileNamed("powerupcollected.wav", waitForCompletion: false))
         removeFromParent()
     }
     

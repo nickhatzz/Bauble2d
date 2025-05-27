@@ -30,6 +30,7 @@ class NestHealer: PowerUpBase, PowerUp {
         for baubite in scene.baubites {
             baubite.health = 100
         }
+        scene.run(SKAction.playSoundFileNamed("powerupcollected.wav", waitForCompletion: false))
         removeFromParent()
     }
     

@@ -58,6 +58,7 @@ class Enemy: SKSpriteNode {
         } else if let nest = target as? Nest {
             nest.health -= attackDamage
         }
+        self.run(SKAction.playSoundFileNamed("attack.wav", waitForCompletion: false))
     }
     
     required init?(coder aDecoder: NSCoder) {
